@@ -45,3 +45,76 @@ insert into bank values (3,4);
 insert into accounts_history values (null, null, 1, "Пополнение", "2004-02-01", "Онлайн-банк", 10000);
 insert into accounts_history values (null, null, 1, "Пополнение", "2004-01-04", "Онлайн-банк", 10000);
 insert into accounts_history values (null, null, 2, "Пополнение", "2004-01-01", "Онлайн-банк", 10000);
+
+/*Задачи:*/
+SELECT "
+----------";
+SELECT "Задача 9:
+Выведите список номеров счетов, 
+суммы на них и даты открытия
+1. в порядке возрастания номеров счетов;
+2. в порядке убывания сумм наших, 
+а в случае одинаковых сумм -  в порядке возрастания номеров.
+";
+SELECT DISTINCT id, balance, open_date FROM account ORDER BY id;
+SELECT "";
+SELECT DISTINCT id, balance, open_date FROM account ORDER BY balance DESC, id;
+SELECT "
+----------";
+
+SELECT "Задача 17:
+Выведите список счетов, которые были открыты ранее 2003 года 
+и на которых при этом содержится не менее 1000000.
+";
+SELECT * from account WHERE (open_date < "2003-01-01" AND balance > 1000000);
+SELECT "
+----------";
+
+SELECT "Задача 18:
+Выведите список счетов, которые были открыты, в 2002 году.
+";
+SELECT * FROM account WHERE (open_date BETWEEN "2002-01-01" AND "2002-12-31");
+SELECT "
+----------";
+
+SELECT "Задача 21:
+С помощью between выберите номера счетов, 
+на которых находится сумма от 10000 до 100000.
+";
+SELECT id FROM account WHERE balance BETWEEN 10000 AND 100000;
+SELECT "
+----------";
+
+SELECT "Задача 27:
+Выберите счета, в номере которых присутствует 
+хотя бы одна из цифр: 3, 5, или 9.
+";
+SELECT id FROM account WHERE id LIKE "%3%" OR id LIKE "%5%" OR id LIKE "%9%";
+SELECT "
+----------";
+
+SELECT "Задача 51:
+Построить запрос, соединяющий таблицы клиентов и счетов.";
+select "Клиент:", client_id, " Аккаунт: ", account_id from bank;
+SELECT "
+----------";
+
+select "Задача 52:
+Построить запрос, определяющий количество владельцев каждого счета.";
+select "Счет: ", account_id, " Количество владельцев: ",count(account_id) from bank GROUP BY account_id;
+SELECT "
+----------";
+
+select "Задача 53:
+Построить запрос, определяющий для каждого клиента 
+количество счетов, владельцем или совладельцем которых он является.";
+SELECT "Клиент ", client_id, " имеет счет под номером: ", account_id FROM bank;
+SELECT "
+----------";
+
+select "Задача 57:
+Для каждого счета определить, сколько операций с ним 
+было проделано после его открытия 01.01.2004-01.02.2004";
+select "Счет под номером: ",_where, " имеет ", count(_where), " операций." from accounts_history GROUP BY _where HAVING _date BETWEEN "2004-01-01" AND "2004-02-01";
+SELECT "
+----------";
