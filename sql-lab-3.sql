@@ -118,3 +118,20 @@ select "Задача 57:
 select "Счет под номером: ",_where, " имеет ", count(_where), " операций." from accounts_history GROUP BY _where HAVING _date BETWEEN "2004-01-01" AND "2004-02-01";
 SELECT "
 ----------";
+
+select "Задача 68:
+Запишите следующий запрос при помощи подзапросов-сравнений 
+и при помощи exists: найдите клиентов, общая сумма на
+счетах (с учетом общих с другими клиентами счетов) которых 
+является наибольшей.
+";
+select max(reqsum),client_id from (select sum(balance) as reqsum, client_id from account, bank where exists (select balance from account where balance not NULL) AND account_id==account.id GROUP BY client_id);
+SELECT "
+----------";
+
+select "Задача 69:
+Запишите следующей запрос при помощи подзапросов-сравнений 
+и при помощи exists: найдите клиентов, общая сумма на счетах 
+(без учета общих с другими клиентами счетов) которых является наибольшей.";
+SELECT "
+----------";
