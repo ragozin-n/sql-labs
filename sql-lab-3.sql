@@ -33,7 +33,7 @@ insert into clients values ("Степан Викторович", "ул. Лени
 insert into account values (NULL, 1, 300, CURRENT_DATE,NULL);
 insert into account values (NULL, 1, 500, DATE(strftime('%s', '2016-10-01 00:00:00') + abs(random() % (strftime('%s', '2016-10-30 23:59:59') - strftime('%s', '2016-10-01 00:00:00'))),'unixepoch'), NULL);
 insert into account values (NULL, 1, 10010, DATE(strftime('%s', '2016-10-01 00:00:00') + abs(random() % (strftime('%s', '2016-10-30 23:59:59') - strftime('%s', '2016-10-01 00:00:00'))),'unixepoch'), NULL);
-insert into account values (NULL, 1, 5000000, DATE(strftime('%s', '2002-10-01 00:00:00') + abs(random() % (strftime('%s', '2002-10-30 23:59:59') - strftime('%s', '2002-10-01 00:00:00'))),'unixepoch'), NULL);
+insert into account values (NULL, 1, 5, DATE(strftime('%s', '2002-10-01 00:00:00') + abs(random() % (strftime('%s', '2002-10-30 23:59:59') - strftime('%s', '2002-10-01 00:00:00'))),'unixepoch'), NULL);
 
 insert into bank values (1,1);
 insert into bank values (1,2);
@@ -99,6 +99,7 @@ select "Клиент:", client_id, " Аккаунт: ", account_id from bank;
 SELECT "
 ----------";
 
+-- 
 select "Задача 52:
 Построить запрос, определяющий количество владельцев каждого счета.";
 select "Счет: ", account_id, " Количество владельцев: ",count(account_id) from bank GROUP BY account_id;
@@ -108,10 +109,10 @@ SELECT "
 select "Задача 53:
 Построить запрос, определяющий для каждого клиента 
 количество счетов, владельцем или совладельцем которых он является.";
-SELECT "Клиент ", client_id, " имеет счет под номером: ", account_id FROM bank;
+SELECT "Клиент ", client_id, " имеет ",count(account_id), " счетов" FROM bank GROUP BY client_id;
 SELECT "
 ----------";
-
+-- 
 select "Задача 57:
 Для каждого счета определить, сколько операций с ним 
 было проделано после его открытия 01.01.2004-01.02.2004";
@@ -119,6 +120,7 @@ select "Счет под номером: ",_where, " имеет ", count(_where),
 SELECT "
 ----------";
 
+-- Остановились здесь
 select "Задача 68:
 Запишите следующий запрос при помощи подзапросов-сравнений 
 и при помощи exists: найдите клиентов, общая сумма на
@@ -133,5 +135,70 @@ select "Задача 69:
 Запишите следующей запрос при помощи подзапросов-сравнений 
 и при помощи exists: найдите клиентов, общая сумма на счетах 
 (без учета общих с другими клиентами счетов) которых является наибольшей.";
+select max(reqsum),client_id from (select sum(balance) as reqsum, client_id from account, bank where exists (select balance from account where balance not NULL) AND account_id==account.id GROUP BY client_id HAVING count(client_id)==1);
+SELECT "
+----------";
+
+select "Задача 84:
+Напишите следующий запрос с использованием представлений и с использованием, запросов
+в качестве исходных таблиц. Найти количество счетов тех клиентов, которые имеют
+наибольшую общую сумму на своих счетах.";
+CREATE VIEW max_balances AS select client_id from (select sum(balance) as reqsum, client_id from account, bank where exists (select balance from account where balance not NULL) AND account_id==account.id GROUP BY client_id);
+select count(acc_count) from (select account_id as acc_count from bank, max_balances GROUP BY account_id HAVING bank.client_id=max_balances.client_id) ORDER BY acc_count;
+SELECT "
+----------";
+
+select "Задача 90:
+Напишите операторы необходимые для занесения в базу данных информации 
+о новом, клиентеи об открытии им счета.";
+-- Создали клиента
+insert into clients values ("Иванов И.И.", "ул. Ленина, д. 33", NULL);
+-- Создали счет на 150 рублей
+insert into account values (NULL, 1, 0, DATE(strftime('%s', '2016-10-01 00:00:00') + abs(random() % (strftime('%s', '2016-10-30 23:59:59') - strftime('%s', '2016-10-01 00:00:00'))),'unixepoch'), NULL);
+-- Связали клиента со счетом
+insert into bank values ((SELECT id FROM clients WHERE id = (SELECT MAX(id) FROM clients)),(SELECT id FROM account WHERE id = (SELECT MAX(id) FROM account)));
+SELECT * from bank;
+SELECT "
+----------";
+
+select "Задача 93:
+Напишите операторы, необходимые для закрытия счета клиентом.";
+delete from bank where account_id=ЧИСЛО and client_id=ЧИСЛО;
+SELECT "
+----------";
+
+select "Задача 94:
+Напишите оператюры, которые для какого-либо клиента закрывают счета, 
+единоличным владельцем котюрых он является, а для счетов, у котюрых есть
+совладельцы, клиент, удаляется из их числа.";
+delete from bank where client_id=ЧИСЛО;
+SELECT "
+----------";
+
+select "Задача 97:
+Напишите оператор, который заносит некоторую сумму на определенный счет.
+";
+insert into accounts_history values (null, null, 5, "Пополнение", "2004-02-01", "Онлайн-банк", 100);
+select * from account;
+SELECT "
+----------";
+
+select "Задача 99:
+Напишите оператор, который заносит сумму в 10000 на счет, единоличным владельцем
+которого является г-н Иванов И.И., и на котором находится наименьшая среди всех 
+таких счетов сумма. Считать, что такой счет только один.
+";
+insert into accounts_history values (null, null, 
+(select account_id from (select min(balance) as reqsum, client_id, account_id from account, bank where exists (select balance from account where balance not NULL) AND account_id==account.id AND client_id=(select id FROM clients where name="Иванов И.И.") GROUP BY client_id))
+, "Пополнение", "2004-02-01", "Онлайн-банк", 10000);
+select * from account;
+SELECT "
+----------";
+
+select "Задача 101:
+Создайте представление, которое позволяет изменять информацию о счетах 
+только тех клиентов, имя которых начинается на буквы от, «И» до «О».";
+create view view2 as select name FROM clients where name between "И" AND "О";
+select * from view2;
 SELECT "
 ----------";
